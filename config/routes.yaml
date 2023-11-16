@@ -4,6 +4,10 @@
 #  methods:  GET
 #
 
+get_exchange_rates:
+    path: /api/exchange-rates
+    controller: App\Controller\CurrencyController::getExchangeRates
+
 setupcheck:
     path: /api/setup-check
     controller: App\Controller\DefaultController::setupCheck
@@ -16,4 +20,3 @@ index:
     requirements:
         wildcard: .*
     # controller: App\Controller\DefaultController::index
-
