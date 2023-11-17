@@ -88,6 +88,7 @@ const ExchangeRates = () => {
                     onChange={(e) => setFilter(e.target.value)}
                     placeholder="Wyszukaj po kodzie waluty (np. USD)"
                 />
+                <p className="my-4 text-center text-muted">Po kliknięciu na wiersz, mamy możliwość przeliczenia waluty z kursem dnia dzisiejszego</p>
             </div>
             {loading ? (
                 <div className="d-flex justify-content-center align-items-center spinner-container">
