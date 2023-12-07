@@ -12,6 +12,8 @@ const CurrencyExchangeModal = ({rate, rates, isOpen, onClose}) => {
         if (rate) {
             mergeRates();
         }
+
+        if (!isPurchaseAvailable) setSelectedOperation('sell')
     }, [rate]);
 
     useEffect(() => {
@@ -76,9 +78,7 @@ const CurrencyExchangeModal = ({rate, rates, isOpen, onClose}) => {
     };
 
     const handleClose = () => {
-        setSelectedOperation('sell')
         setAmount('');
-        setTargetRateCode('PLN')
         onClose();
     };
 
