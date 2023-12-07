@@ -107,6 +107,7 @@ const ExchangeRates = () => {
             )}
             <CurrencyExchangeModal
                 rate={selectedRate}
+                rates={currentRates}
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
             />

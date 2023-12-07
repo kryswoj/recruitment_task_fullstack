@@ -1,15 +1,64 @@
-import React, {useMemo, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
-const CurrencyExchangeModal = ({rate, isOpen, onClose}) => {
+const CurrencyExchangeModal = ({rate, rates, isOpen, onClose}) => {
     const [selectedOperation, setSelectedOperation] = useState('sell');
     const [amount, setAmount] = useState('');
+    const [targetRateCode, setTargetRateCode] = useState('PLN');
+    const [multiplier, setMultiplier] = useState(1)
+
+    const [mergedRates, setMergedRates] = useState([]);
+
+    useEffect(() => {
+        if (rate) {
+            mergeRates();
+        }
+    }, [rate]);
+
+    useEffect(() => {
+        if (!rate || !rates) return;
+
+        if (targetRateCode === 'PLN') {
+            setMultiplier(getRateValue(rate))
+            return;
+        }
+
+        const sourceRateValue = getRateValue(rate);
+        const targetRate = rates.find(r => r.code === targetRateCode);
+        const targetRateValue = getRateValue(targetRate);
+
+        if (!sourceRateValue || !targetRateValue) {
+            setMultiplier('Nie prowadzimy wybranej akcji dla danej pary walutowej')
+            return;
+        }
+
+        const newMultiplier = sourceRateValue / targetRateValue;
+        setMultiplier(newMultiplier.toFixed(6));
+    }, [targetRateCode, selectedOperation, rate, rates]);
 
     if (!isOpen || !rate) return null;
 
+    const mergeRates = () => {
+        const PLNRate = {'code': 'PLN', 'currency': 'polski złoty', 'rates': {}}
+        PLNRate['rates']['purchase'] = rate.rates.purchase
+        PLNRate['rates']['selling'] = rate.rates.selling
+
+        let newRates = [...rates]
+        newRates.push(PLNRate)
+
+        setMergedRates(newRates)
+    }
+
+
     const calculateResult = () => {
         if (!amount) return '';
-        const rateValue = getRateValue()
-        return (parseFloat(amount) * rateValue).toFixed(2);
+
+        return (parseFloat(amount) * multiplier).toFixed(2);
+    };
+
+    const renderCurrencyOptions = () => {
+        return mergedRates.map(rate => (
+            <option key={rate.code} value={rate.code}>{rate.currency}</option>
+        ));
     };
 
     const isPurchaseAvailable = rate && rate.rates.purchase !== null;
@@ -22,13 +71,14 @@ const CurrencyExchangeModal = ({rate, isOpen, onClose}) => {
         return options;
     };
 
-    const getRateValue = () => {
+    const getRateValue = (rate) => {
         return selectedOperation === 'buy' ? rate.rates.purchase : rate.rates.selling;
     };
 
     const handleClose = () => {
         setSelectedOperation('sell')
         setAmount('');
+        setTargetRateCode('PLN')
         onClose();
     };
 
@@ -66,6 +116,16 @@ const CurrencyExchangeModal = ({rate, isOpen, onClose}) => {
                             </select>
                         </div>
                         <div className="form-group">
+                            <label>Wybrana waluta</label>
+                            <select
+                                className="form-control"
+                                value={targetRateCode}
+                                onChange={(e) => setTargetRateCode(e.target.value)}
+                            >
+                                {renderCurrencyOptions()}
+                            </select>
+                        </div>
+                        <div className="form-group">
                             <label>Kwota:</label>
                             <input
                                 type="number"
@@ -79,12 +139,12 @@ const CurrencyExchangeModal = ({rate, isOpen, onClose}) => {
                             <input
                                 type="text"
                                 className="form-control"
-                                value={getRateValue()}
+                                value={multiplier}
                                 readOnly
                             />
                         </div>
                         <div className="form-group">
-                            <label>Wynik w PLN:</label>
+                            <label>Wynik</label>
                             <input
                                 type="text"
                                 className="form-control"
